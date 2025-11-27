@@ -1,22 +1,27 @@
-# Sora2-Unlimiter
-A simple patch to bypass the Sora 2 video generation limit. Extends video length from 10s up to 25s.
+# Уникальный чат-парсер (MTProto)
 
+Реальный веб-клиент для Telegram, который через MTProto авторизуется по телефону, показывает список диалогов и выгружает отправителей последних N сообщений с фильтром дата-центра (по умолчанию — только DC1). Всё работает прямо в браузере: сессия и ключи сохраняются в `localStorage`.
 
-Sora2 Unlimiter Patcher
-Tired of the ridiculous 10-second limit imposed by the greedy suits at OpenAI? This simple tool patches your local Sora 2 client to extend the maximum video generation time up to 25 seconds. Now you can create the masterpieces you want, not the short scraps they allow.
-How It Works
-Our script uses a frame injection technique. It intercepts the final rendering command sent to the model and cleverly duplicates keyframes, essentially tricking the AI into continuing the generation sequence well beyond the standard cutoff point. It does not modify core files, so it's relatively safe for your account (no promises though, lol).
-Features
-Extends max video length to 25 seconds.
-Simple one-click command line interface.
-Doesn't require your API key or login credentials.
-Works on the latest version of Sora 2 desktop client.
-Installation & Usage
-It couldn't be easier. We've compiled everything for you.
-Go to the "Releases" section on the right.
-Download the latest Sora2Unlimiter.exe.
-Run the executable. You might get a warning from Windows Defender because the app is not signed (we're indie devs, not a corporation, duh). Just click "More info" and "Run anyway".
-A console window will appear, perform the patch, and close automatically.
-That's it. Restart your Sora 2 client and enjoy the extended generation time.
-Disclaimer
-This is an unofficial, third-party tool. Use it at your own risk. There is a theoretical chance that OpenAI could detect this and ban your account. We are not responsible for any consequences. But hey, no risk, no reward, right?
+## Возможности
+- Авторизация по `api_id`, `api_hash` и номеру телефона (без сервера, только MTProto в браузере).
+- Запрос и подтверждение кода из Telegram, сохранение сессии локально.
+- Список реальных диалогов (личные, группы, каналы) с выбором целевого чата.
+- Сканирование до 1000 последних сообщений с гибкими фильтрами:
+  - только DC=1 (по `photo.dc_id` отправителя),
+  - уникальные юзернеймы,
+  - минимальная длина сообщения,
+  - фильтр по ключевым словам,
+  - скрыть ботов,
+  - исключать сервисные и пересланные сообщения,
+  - ограничение по давности (N дней),
+  - требование наличия медиа или username.
+- Экспорт результатов в TXT и CSV.
+
+## Запуск
+1. Открой `index.html` в браузере (можно через `python -m http.server 8000`).
+2. В блоке авторизации введи `api_id` и `api_hash` из https://my.telegram.org, а также номер телефона.
+3. Нажми «Запросить код», введи код из Telegram и подтверди.
+4. Выбери чат, выставь параметры в админ-панели и жми «Сканировать чат».
+5. Скачай TXT или CSV с юзернеймами (DC=1 по умолчанию).
+
+> ⚠️ Если включена 2FA, текущая сборка покажет предупреждение — добавь обработку пароля в `signIn` при необходимости.

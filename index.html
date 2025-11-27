@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Уникальный чат-парсер</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero__badge">MTProto live</div>
+      <h1>Уникальный чат-парсер</h1>
+      <p>Подключись к Telegram через MTProto, выбери чат и выгрузи отправителей последних 1000 сообщений с фильтром дата-центра.</p>
+    </header>
+
+    <main class="layout">
+      <section class="card" id="session-card">
+        <div class="card__header">
+          <h2>1. Авторизация</h2>
+          <p class="muted">Укажи свой <strong>api_id</strong>, <strong>api_hash</strong> и телефон — мы шифруем ключи в localStorage, никакой симуляции.</p>
+        </div>
+        <form id="session-form" class="form-grid">
+          <label>
+            <span>API ID</span>
+            <input id="api-id" name="api_id" type="number" placeholder="Например, 123456" required />
+          </label>
+          <label>
+            <span>API Hash</span>
+            <input id="api-hash" name="api_hash" type="text" placeholder="hex" required />
+          </label>
+          <label>
+            <span>Телефон</span>
+            <input id="phone-input" name="phone" type="tel" placeholder="Например, +7 999 123-45-67" required />
+          </label>
+          <button type="submit" class="btn primary">Запросить код</button>
+        </form>
+        <div id="code-block" class="form-grid" hidden>
+          <label>
+            <span>Код из Telegram</span>
+            <input id="code-input" type="text" placeholder="12345" />
+          </label>
+          <button id="code-submit" class="btn primary">Подтвердить</button>
+        </div>
+        <div id="session-result" class="session-result" hidden></div>
+      </section>
+
+      <section class="card" id="chats-card" hidden>
+        <div class="card__header">
+          <h2>2. Выбери чат</h2>
+          <p class="muted">Подтягиваем реальные диалоги через MTProto (users, groups, супергруппы).</p>
+        </div>
+        <ul id="chat-list" class="chat-list"></ul>
+      </section>
+
+      <section class="card" id="admin-card" hidden>
+        <div class="card__header">
+          <div>
+            <h2>3. Админ-панель сканирования</h2>
+            <p class="muted">Реальные данные: лимиты, временной диапазон, медиа-фильтры, DC=1 и экспорт.</p>
+          </div>
+          <span class="pill">power tools</span>
+        </div>
+        <div class="admin-grid">
+          <label>
+            <span>Глубина сканирования (сообщений)</span>
+            <input id="limit-input" type="number" min="50" max="1000" step="50" value="1000" />
+          </label>
+          <label>
+            <span>Только за N дней</span>
+            <input id="days-input" type="number" min="0" max="180" step="1" value="0" />
+          </label>
+          <label class="checkbox-row">
+            <input id="dc-filter" type="checkbox" checked />
+            <div>
+              <strong>Только дата-центр 1</strong>
+              <p class="muted">Отфильтровывает отправителей с другим DC.</p>
+            </div>
+          </label>
+          <label class="checkbox-row">
+            <input id="dedupe" type="checkbox" checked />
+            <div>
+              <strong>Уникальные юзернеймы</strong>
+              <p class="muted">Исключить повторяющихся отправителей.</p>
+            </div>
+          </label>
+          <label>
+            <span>Мин. длина сообщения</span>
+            <input id="min-length" type="number" min="0" max="400" step="10" value="0" />
+          </label>
+          <label>
+            <span>Ключевые слова (через запятую)</span>
+            <input id="keyword-filter" type="text" placeholder="game, release, meeting" />
+          </label>
+          <label class="checkbox-row">
+            <input id="skip-bots" type="checkbox" />
+            <div>
+              <strong>Скрыть ботов</strong>
+              <p class="muted">Исключить пользователей с суффиксом bot.</p>
+            </div>
+          </label>
+          <label class="checkbox-row">
+            <input id="skip-service" type="checkbox" checked />
+            <div>
+              <strong>Без сервисных событий</strong>
+              <p class="muted">Пропускать join/leave, pinned, migrations.</p>
+            </div>
+          </label>
+          <label class="checkbox-row">
+            <input id="allow-forwards" type="checkbox" />
+            <div>
+              <strong>Включать пересланные</strong>
+              <p class="muted">Если выключено — пропускаем пересланные сообщения.</p>
+            </div>
+          </label>
+          <label class="checkbox-row">
+            <input id="require-media" type="checkbox" />
+            <div>
+              <strong>Только сообщения с медиа</strong>
+              <p class="muted">Отбирает сообщения с фото/документами/видео.</p>
+            </div>
+          </label>
+          <label class="checkbox-row">
+            <input id="require-username" type="checkbox" checked />
+            <div>
+              <strong>Только с username</strong>
+              <p class="muted">Отбрасывает отправителей без публичного @.</p>
+            </div>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="scan-button" class="btn primary" disabled>Сканировать чат</button>
+          <button id="download-button" class="btn ghost" disabled>Скачать txt</button>
+          <button id="download-csv" class="btn ghost" disabled>Скачать csv</button>
+          <span id="status-chip" class="pill muted" hidden></span>
+        </div>
+        <div id="results" class="results" hidden>
+          <div class="results__header">
+            <div>
+              <p class="muted">Результаты</p>
+              <h3 id="results-title"></h3>
+            </div>
+            <div class="results__stats">
+              <span id="msg-count" class="pill">0 сообщений</span>
+              <span id="user-count" class="pill">0 отправителей</span>
+            </div>
+          </div>
+          <ul id="user-list" class="user-list"></ul>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
