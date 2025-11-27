@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Уникальный чат-парсер</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero__badge">Parser v2.0</div>
+      <h1>Уникальный чат-парсер</h1>
+      <p>Создай сессию по номеру, выбери чат и выгрузи отправителей последних 1000 сообщений с дата-центром 1.</p>
+    </header>
+
+    <main class="layout">
+      <section class="card" id="session-card">
+        <div class="card__header">
+          <h2>1. Создай сессию</h2>
+          <p class="muted">Мы не отправляем запросы наружу — здесь безопасная симуляция.</p>
+        </div>
+        <form id="session-form" class="form-grid">
+          <label>
+            <span>Номер телефона</span>
+            <input id="phone-input" name="phone" type="tel" placeholder="Например, +7 999 123-45-67" required />
+          </label>
+          <label>
+            <span>Псевдоним сессии</span>
+            <input id="session-name" name="session" type="text" placeholder="Опционально" />
+          </label>
+          <button type="submit" class="btn primary">Создать сессию</button>
+        </form>
+        <div id="session-result" class="session-result" hidden></div>
+      </section>
+
+      <section class="card" id="chats-card" hidden>
+        <div class="card__header">
+          <h2>2. Выбери чат</h2>
+          <p class="muted">Подтянули список доступных комнат с количеством сообщений.</p>
+        </div>
+        <ul id="chat-list" class="chat-list"></ul>
+      </section>
+
+      <section class="card" id="admin-card" hidden>
+        <div class="card__header">
+          <div>
+            <h2>3. Админ-панель сканирования</h2>
+            <p class="muted">Гибкие параметры: глубина, фильтры, формат выгрузки.</p>
+          </div>
+          <span class="pill">pro tools</span>
+        </div>
+        <div class="admin-grid">
+          <label>
+            <span>Глубина сканирования (сообщений)</span>
+            <input id="limit-input" type="number" min="50" max="1000" step="50" value="1000" />
+          </label>
+          <label class="checkbox-row">
+            <input id="dc-filter" type="checkbox" checked />
+            <div>
+              <strong>Только дата-центр 1</strong>
+              <p class="muted">Отфильтровывает отправителей с другим DC.</p>
+            </div>
+          </label>
+          <label class="checkbox-row">
+            <input id="dedupe" type="checkbox" checked />
+            <div>
+              <strong>Уникальные юзернеймы</strong>
+              <p class="muted">Исключить повторяющихся отправителей.</p>
+            </div>
+          </label>
+          <label>
+            <span>Мин. длина сообщения</span>
+            <input id="min-length" type="number" min="0" max="200" step="10" value="0" />
+          </label>
+          <label>
+            <span>Ключевые слова (через запятую)</span>
+            <input id="keyword-filter" type="text" placeholder="game, release, meeting" />
+          </label>
+          <label class="checkbox-row">
+            <input id="skip-bots" type="checkbox" />
+            <div>
+              <strong>Скрыть ботов</strong>
+              <p class="muted">Исключить пользователей с суффиксом bot.</p>
+            </div>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="scan-button" class="btn primary" disabled>Сканировать чат</button>
+          <button id="download-button" class="btn ghost" disabled>Скачать txt</button>
+          <span id="status-chip" class="pill muted" hidden></span>
+        </div>
+        <div id="results" class="results" hidden>
+          <div class="results__header">
+            <div>
+              <p class="muted">Результаты</p>
+              <h3 id="results-title"></h3>
+            </div>
+            <div class="results__stats">
+              <span id="msg-count" class="pill">0 сообщений</span>
+              <span id="user-count" class="pill">0 отправителей</span>
+            </div>
+          </div>
+          <ul id="user-list" class="user-list"></ul>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
