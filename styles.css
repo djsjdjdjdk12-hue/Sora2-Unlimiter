@@ -192,6 +192,18 @@ input:focus {
   font-size: 13px;
 }
 
+.pill--warn {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.3);
+  color: #fecdd3;
+}
+
+.pill--ok {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #a7f3d0;
+}
+
 .admin-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

@@ -9,35 +9,46 @@
 <body>
   <div class="page-shell">
     <header class="hero">
-      <div class="hero__badge">Parser v2.0</div>
+      <div class="hero__badge">MTProto live</div>
       <h1>Уникальный чат-парсер</h1>
-      <p>Создай сессию по номеру, выбери чат и выгрузи отправителей последних 1000 сообщений с дата-центром 1.</p>
+      <p>Подключись к Telegram через MTProto, выбери чат и выгрузи отправителей последних 1000 сообщений с фильтром дата-центра.</p>
     </header>
 
     <main class="layout">
       <section class="card" id="session-card">
         <div class="card__header">
-          <h2>1. Создай сессию</h2>
-          <p class="muted">Мы не отправляем запросы наружу — здесь безопасная симуляция.</p>
+          <h2>1. Авторизация</h2>
+          <p class="muted">Укажи свой <strong>api_id</strong>, <strong>api_hash</strong> и телефон — мы шифруем ключи в localStorage, никакой симуляции.</p>
         </div>
         <form id="session-form" class="form-grid">
           <label>
-            <span>Номер телефона</span>
-            <input id="phone-input" name="phone" type="tel" placeholder="Например, +7 999 123-45-67" required />
+            <span>API ID</span>
+            <input id="api-id" name="api_id" type="number" placeholder="Например, 123456" required />
           </label>
           <label>
-            <span>Псевдоним сессии</span>
-            <input id="session-name" name="session" type="text" placeholder="Опционально" />
+            <span>API Hash</span>
+            <input id="api-hash" name="api_hash" type="text" placeholder="hex" required />
           </label>
-          <button type="submit" class="btn primary">Создать сессию</button>
+          <label>
+            <span>Телефон</span>
+            <input id="phone-input" name="phone" type="tel" placeholder="Например, +7 999 123-45-67" required />
+          </label>
+          <button type="submit" class="btn primary">Запросить код</button>
         </form>
+        <div id="code-block" class="form-grid" hidden>
+          <label>
+            <span>Код из Telegram</span>
+            <input id="code-input" type="text" placeholder="12345" />
+          </label>
+          <button id="code-submit" class="btn primary">Подтвердить</button>
+        </div>
         <div id="session-result" class="session-result" hidden></div>
       </section>
 
       <section class="card" id="chats-card" hidden>
         <div class="card__header">
           <h2>2. Выбери чат</h2>
-          <p class="muted">Подтянули список доступных комнат с количеством сообщений.</p>
+          <p class="muted">Подтягиваем реальные диалоги через MTProto (users, groups, супергруппы).</p>
         </div>
         <ul id="chat-list" class="chat-list"></ul>
       </section>
@@ -46,14 +57,18 @@
         <div class="card__header">
           <div>
             <h2>3. Админ-панель сканирования</h2>
-            <p class="muted">Гибкие параметры: глубина, фильтры, формат выгрузки.</p>
+            <p class="muted">Реальные данные: лимиты, временной диапазон, медиа-фильтры, DC=1 и экспорт.</p>
           </div>
-          <span class="pill">pro tools</span>
+          <span class="pill">power tools</span>
         </div>
         <div class="admin-grid">
           <label>
             <span>Глубина сканирования (сообщений)</span>
             <input id="limit-input" type="number" min="50" max="1000" step="50" value="1000" />
+          </label>
+          <label>
+            <span>Только за N дней</span>
+            <input id="days-input" type="number" min="0" max="180" step="1" value="0" />
           </label>
           <label class="checkbox-row">
             <input id="dc-filter" type="checkbox" checked />
@@ -71,7 +86,7 @@
           </label>
           <label>
             <span>Мин. длина сообщения</span>
-            <input id="min-length" type="number" min="0" max="200" step="10" value="0" />
+            <input id="min-length" type="number" min="0" max="400" step="10" value="0" />
           </label>
           <label>
             <span>Ключевые слова (через запятую)</span>
@@ -84,10 +99,39 @@
               <p class="muted">Исключить пользователей с суффиксом bot.</p>
             </div>
           </label>
+          <label class="checkbox-row">
+            <input id="skip-service" type="checkbox" checked />
+            <div>
+              <strong>Без сервисных событий</strong>
+              <p class="muted">Пропускать join/leave, pinned, migrations.</p>
+            </div>
+          </label>
+          <label class="checkbox-row">
+            <input id="allow-forwards" type="checkbox" />
+            <div>
+              <strong>Включать пересланные</strong>
+              <p class="muted">Если выключено — пропускаем пересланные сообщения.</p>
+            </div>
+          </label>
+          <label class="checkbox-row">
+            <input id="require-media" type="checkbox" />
+            <div>
+              <strong>Только сообщения с медиа</strong>
+              <p class="muted">Отбирает сообщения с фото/документами/видео.</p>
+            </div>
+          </label>
+          <label class="checkbox-row">
+            <input id="require-username" type="checkbox" checked />
+            <div>
+              <strong>Только с username</strong>
+              <p class="muted">Отбрасывает отправителей без публичного @.</p>
+            </div>
+          </label>
         </div>
         <div class="actions">
           <button id="scan-button" class="btn primary" disabled>Сканировать чат</button>
           <button id="download-button" class="btn ghost" disabled>Скачать txt</button>
+          <button id="download-csv" class="btn ghost" disabled>Скачать csv</button>
           <span id="status-chip" class="pill muted" hidden></span>
         </div>
         <div id="results" class="results" hidden>
@@ -106,6 +150,6 @@
       </section>
     </main>
   </div>
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
